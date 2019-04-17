@@ -76,7 +76,7 @@ void dribber(void);
 void pack(uint8_t *);
 void PWM_SET_VALUE(TIM_HandleTypeDef *htim,uint32_t Channel,uint16_t value);
 void unpack(uint8_t *Packet);
-void motion_planner();
+void motion_planner(void);
 
 /* USER CODE END PTD */
 
@@ -104,6 +104,7 @@ uint8_t Robot_Chip_Or_Shoot;						//chip:1  shoot:0
 uint8_t Robot_Is_Shoot;
 uint8_t Robot_Is_Chip;
 uint8_t Robot_Boot_Power;
+uint8_t Comm_Down_Flag = 0;
 ////uint8_t Robot_Is_Report;
 uint8_t Robot_Chipped = 0, Robot_Shooted = 0;
 uint8_t Robot_Status = 0, Last_Robot_Status = 0;
@@ -114,7 +115,7 @@ uint8_t selftest_vel_mode = 0x02, selftest_drib_mode = 0x03, selftest_chip_mode 
 uint16_t ADC_value[32];   			//存放ADC采集数据
 
 //电池电压与电容电压累计值
-uint32_t AD_Battery = 0,AD_Battery_Last = 217586, AD_Boot_Cap = 0, AD_Boot_Cap_Last;
+uint32_t AD_Battery = 0,AD_Battery_Last = 217586, AD_Boot_Cap = 0, AD_Boot_Cap_Last, Total_Missed_Package_Num = 0, Period_2ms_Since_Last_Zero_Motion_Planner = 0;
 uint8_t AD_Battery_i = 0;
 
 //uint8_t TX_frequency = 0x18;			//NRF24L01发射频率   6号频点时为0x18， 8号频点时为0x5a，
@@ -123,7 +124,7 @@ uint8_t AD_Battery_i = 0;
 int16_t Vx_package = 0, Vy_package = 0, Vr_package = 0;				//下发机器人速度
 int16_t Vx_package_last = 0, Vy_package_last = 0, Vr_package_last = 0;				//上一帧下发机器人速度
 uint8_t acc_set = 10;			//加速度限制 16ms内合成加速度最大值，单位cm/s
-uint16_t acc_r_set = 60; //
+uint16_t acc_r_set = 60;  //
 uint8_t RX_Packet[25];				//收包
 uint8_t TX_Packet[25] = {0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5, 0xA5};						//回包
 
@@ -244,7 +245,6 @@ int main(void)
   MX_SPI1_Init();
   MX_I2C3_Init();
   MX_TIM2_Init();
-  MX_TIM7_Init();
   MX_SPI2_Init();
   MX_TIM14_Init();
   MX_TIM1_Init();
@@ -255,9 +255,7 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM12_Init();
   MX_I2C2_Init();
-  MX_UART8_Init();
   MX_I2C4_Init();
-  MX_SPI3_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
@@ -437,7 +435,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_HRTIM1|RCC_PERIPHCLK_USART3
-                              |RCC_PERIPHCLK_UART8|RCC_PERIPHCLK_SPI3
                               |RCC_PERIPHCLK_SPI1|RCC_PERIPHCLK_SPI2
                               |RCC_PERIPHCLK_I2C2|RCC_PERIPHCLK_I2C3
                               |RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_I2C4
@@ -562,6 +559,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				if(received_packet_flag == 1){
 					motion_planner();
 					Received_packet++;
+					Total_Missed_Package_Num = 0;
+					Comm_Down_Flag = 0;
 					if ((Robot_Status != Last_Robot_Status) || ((Robot_Status & 0x40) == 0x40)) {
 						Left_Report_Package = 5;
 						Last_Robot_Status = Robot_Status;
@@ -580,6 +579,31 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 						Robot_Status = 0;
 						Last_Robot_Status = 0;
 					}
+				}
+				else{
+					if (Comm_Down_Flag == 1){
+						Period_2ms_Since_Last_Zero_Motion_Planner ++;
+						if (Period_2ms_Since_Last_Zero_Motion_Planner>=8){
+							Vy_package = 0;
+							Vx_package = 0;
+							Vr_package = 0;
+							Robot_drib = 0;
+							motion_planner();
+							Period_2ms_Since_Last_Zero_Motion_Planner = 0;
+						}
+					}
+					else{
+					Total_Missed_Package_Num ++;
+					if (Total_Missed_Package_Num >= 250){ // 500ms Missing Package -> Every 16ms Do Motion Planner
+						Comm_Down_Flag = 1;
+						Vy_package = 0;
+						Vx_package = 0;
+						Vr_package = 0;
+						Robot_drib = 0;
+						Period_2ms_Since_Last_Zero_Motion_Planner = 0;
+						motion_planner();
+					}
+				}
 				}
 			}
 			
@@ -604,9 +628,9 @@ void Buzzer_Off(){							//蜂鸣器PWM通道打开，频率2K/0.6，占空比0
 
 //PCA9539初始化函数
 void Init_PCA9539(){
-	uint8_t i;
-	uint8_t PCA9539_REG67_test[2] = {0xa5, 0xa5};
-	uint8_t PCA9539_REG67[2] = {0xff, 0xff};
+//	uint8_t i;
+//	uint8_t PCA9539_REG67_test[2] = {0xa5, 0xa5};
+//	uint8_t PCA9539_REG67[2] = {0xff, 0xff};
 	uint8_t Pca9539_Read[2];
 	uint8_t Pca9539_convert[16] = {15, 7, 11, 3, 13, 5, 9, 1, 14, 6, 10, 2, 12, 4, 8, 0};
 	HAL_I2C_Mem_Read(&hi2c3, 0xe8 + (0x03<<1), 0, I2C_MEMADD_SIZE_8BIT, Pca9539_Read, 2, 0x10);
@@ -680,7 +704,16 @@ void Is_BatteryLow_BootCharged(){
 
 //吸球
 void dribber(void){
-	drib_power = drib_power_set[Robot_drib];
+	if (Robot_drib == 0){
+		drib_power = 0;
+		return;
+	}
+	if (Robot_Is_Infrared == 1){
+		drib_power = drib_power_set[Robot_drib];
+	}
+	else {
+		drib_power = drib_power_set[1];
+	}
 }
 
 //平挑射
@@ -707,7 +740,7 @@ void Shoot_Chip(){
 		}
 		else{
 			Robot_Is_Shoot = 0;
-//			Robot_Status = Robot_Status & 0xd0;
+//			  Robot_Status = Robot_Status & 0xd0;
 		}
 		
 		Robot_Boot_Power = 0;
@@ -862,14 +895,14 @@ void unpack(uint8_t *Packet){
 };
 
 void pack(uint8_t *TX_Packet){
-	memset(TX_Packet, 0xa5, 25);
+	memset(TX_Packet, 0, 25);
 	TX_Packet[0] = 0xff;
 	TX_Packet[1] = 0x02;
 	TX_Packet[2] = robot_num + 1;
 	TX_Packet[3] = Robot_Status;
 }
 
-void motion_planner(){
+void motion_planner(void){
 	int16_t acc_x = 0;
 	int16_t acc_y = 0;
 	double acc_whole = 0;
@@ -898,10 +931,10 @@ void motion_planner(){
 	Vy_package_last = Vy_package;
 	Vr_package_last = Vr_package;
 	
-	Vel_Motor1 = (sin_angle[0] * Vx_package + cos_angle[0] * Vy_package + 0.025 * 8.2 * Vr_package) * Vel_k2;
-	Vel_Motor2 = (sin_angle[1] * Vx_package + cos_angle[1] * Vy_package + 0.025 * 8.2 * Vr_package) * Vel_k2;
-	Vel_Motor3 = (sin_angle[2] * Vx_package + cos_angle[2] * Vy_package + 0.025 * 8.2 * Vr_package) * Vel_k2;
-	Vel_Motor4 = (sin_angle[3] * Vx_package + cos_angle[3] * Vy_package + 0.025 * 8.2 * Vr_package) * Vel_k2;
+	Vel_Motor1 = (sin_angle[0] * Vx_package + cos_angle[0] * Vy_package + 0.205 * Vr_package) * Vel_k2; // 0.025*8.2
+	Vel_Motor2 = (sin_angle[1] * Vx_package + cos_angle[1] * Vy_package + 0.205 * Vr_package) * Vel_k2;
+	Vel_Motor3 = (sin_angle[2] * Vx_package + cos_angle[2] * Vy_package + 0.205 * Vr_package) * Vel_k2;
+	Vel_Motor4 = (sin_angle[3] * Vx_package + cos_angle[3] * Vy_package + 0.205 * Vr_package) * Vel_k2;
 }
 /* USER CODE END 4 */
 

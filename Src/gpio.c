@@ -36,6 +36,11 @@
         * Output
         * EVENT_OUT
         * EXTI
+     PB2   ------> SPI3_MOSI
+     PD14   ------> UART8_CTS
+     PD15   ------> UART8_RTS
+     PC10   ------> SPI3_SCK
+     PC11   ------> SPI3_MISO
 */
 void MX_GPIO_Init(void)
 {
@@ -108,6 +113,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PB2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF7_SPI3;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin */
   GPIO_InitStruct.Pin = MOTORD_DIR_Pin|MOTORD_MODE_Pin|MOTORD_RESET_Pin|SPI2_CE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -140,6 +153,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PD14 PD15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF8_UART8;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PGPin PGPin PGPin PGPin 
                            PGPin PGPin */
   GPIO_InitStruct.Pin = MOTOR1_DIR_Pin|MOTOR1_RESET_Pin|MOTOR1_MODE_Pin|MOTOR4_MODE_Pin 
@@ -154,6 +175,14 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC10 PC11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin PDPin PDPin 
                            PDPin */

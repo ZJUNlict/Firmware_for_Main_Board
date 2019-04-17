@@ -141,7 +141,7 @@ uint8_t NRF24L01_TX_Read_Reg(uint8_t regaddr)
 //返回值,此次读到的状态寄存器值 
 void NRF24L01_RX_Read_Buf(uint8_t regaddr,uint8_t *pBuf,uint8_t datalen)
 {      
-	uint8_t status;
+//	uint8_t status;
 	Clr_NRF24L01_RX_CSN;                     //使能SPI传输
 
 	//阻塞型
@@ -157,7 +157,7 @@ void NRF24L01_RX_Read_Buf(uint8_t regaddr,uint8_t *pBuf,uint8_t datalen)
 }
 void NRF24L01_TX_Read_Buf(uint8_t regaddr,uint8_t *pBuf,uint8_t datalen)
 {      
-	uint8_t status;
+//	uint8_t status;
 	Clr_NRF24L01_TX_CSN;                     //使能SPI传输
 
 	//阻塞型
