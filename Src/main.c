@@ -70,11 +70,11 @@ void Init_PCA9539(void);		//PCA9539初始化
 void Buzzer_Ring(void);					//蜂鸣器鸣叫
 void Buzzer_Off(void);					//蜂鸣器关闭
 void Is_Infrared(void);
-void Shoot_Chip(void);
+uint8_t Shoot_Chip(void);
 void Is_BatteryLow_BootCharged(void);
 void dribber(void);
 void pack(uint8_t *);
-void PWM_SET_VALUE(TIM_HandleTypeDef *htim,uint32_t Channel,uint16_t value);
+//void PWM_SET_VALUE(TIM_HandleTypeDef *htim,uint32_t Channel,uint16_t value);
 void unpack(uint8_t *Packet);
 void motion_planner(void);
 
@@ -103,13 +103,14 @@ uint8_t Robot_drib;
 uint8_t Robot_Chip_Or_Shoot;						//chip:1  shoot:0
 uint8_t Robot_Is_Shoot;
 uint8_t Robot_Is_Chip;
-uint8_t Robot_Boot_Power;
+uint8_t shoot_chip_flag = 0;
+uint8_t Robot_Boot_Power = 0;
 uint8_t Comm_Down_Flag = 0;
 ////uint8_t Robot_Is_Report;
 uint8_t Robot_Chipped = 0, Robot_Shooted = 0;
 uint8_t Robot_Status = 0, Last_Robot_Status = 0;
 int8_t Left_Report_Package = 0;
-uint16_t drib_power, drib_power_set[4] = {0, 400, 600, 2500};
+uint16_t drib_power, drib_power_set[4] = {0, 1000, 2000, 3200};
 uint8_t selftest_vel_mode = 0x02, selftest_drib_mode = 0x03, selftest_chip_mode = 0x04, selftest_shoot_mode = 0x05, selftest_discharge_mode = 0x06; 
 //ALIGN_32BYTES(__attribute__((section (".RAM_D2"))) )
 uint16_t ADC_value[32];   			//存放ADC采集数据
@@ -346,17 +347,20 @@ int main(void)
 ////			HAL_GPIO_TogglePin(TX_COM_GPIO_Port, TX_COM_Pin);
 ////			HAL_Delay(100);
 ////		}
-////		if(NRF24L01_RX_Check() == 0){
-////			HAL_GPIO_TogglePin(RX_COM_GPIO_Port, RX_COM_Pin);
-////			HAL_Delay(100);
-////		}
-////		
+//////		if(NRF24L01_RX_Check() == 0){
+//////			HAL_GPIO_TogglePin(RX_COM_GPIO_Port, RX_COM_Pin);
+//////			HAL_Delay(100);
+//////		}
 		
-		if(Received_packet == 50){
+//////		NRF2401DMA调试
+//////		NRF24L01_RX_DMA_Check();
+//////		HAL_Delay(100);
+		
+		if(Received_packet == 30){
 			HAL_GPIO_TogglePin(RX_COM_GPIO_Port, RX_COM_Pin);
 			Received_packet = 0;
 		};
-		if(transmitted_packet == 10){
+		if(transmitted_packet == 30){
 			HAL_GPIO_TogglePin(TX_COM_GPIO_Port, TX_COM_Pin);
 			transmitted_packet = 0;
 		}
@@ -364,7 +368,8 @@ int main(void)
 		Is_Infrared();				//是否触发红外
 		dribber();
 		Is_BatteryLow_BootCharged();			//电池电压是否低于15.2V，电容是否充电到60V
-		Shoot_Chip();					//平挑射
+////		平挑射放到2ms中断里面
+////		Shoot_Chip();					//平挑射
   }
     /* USER CODE END WHILE */
 
@@ -547,7 +552,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			HRTIM1->sTimerxRegs[HRTIM_TIMERINDEX_TIMER_B].CMP1xR = abs(PWM_Pulse_Motor4_value);
 			
 			heart_toggle_flag ++;
-			if(heart_toggle_flag == 1000){
+			if(heart_toggle_flag == 500){
 				HAL_GPIO_TogglePin(HEART_GPIO_Port, HEART_Pin);
 				heart_toggle_flag = 0;
 			}
@@ -580,19 +585,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 						Last_Robot_Status = 0;
 					}
 				}
-				else{
-					if (Comm_Down_Flag == 1){
-						Period_2ms_Since_Last_Zero_Motion_Planner ++;
-						if (Period_2ms_Since_Last_Zero_Motion_Planner>=8){
-							Vy_package = 0;
-							Vx_package = 0;
-							Vr_package = 0;
-							Robot_drib = 0;
-							motion_planner();
-							Period_2ms_Since_Last_Zero_Motion_Planner = 0;
-						}
-					}
-					else{
+			}
+				else {
+					received_packet_flag = 0;
+				}
+			if (Comm_Down_Flag == 1){
+				Period_2ms_Since_Last_Zero_Motion_Planner ++;
+				if (Period_2ms_Since_Last_Zero_Motion_Planner>=8){
+					Vy_package = 0;
+					Vx_package = 0;
+					Vr_package = 0;
+					Robot_drib = 0;
+					motion_planner();
+					Period_2ms_Since_Last_Zero_Motion_Planner = 0;
+				}
+			}
+			else{
+				if(received_packet_flag == 0){
 					Total_Missed_Package_Num ++;
 					if (Total_Missed_Package_Num >= 250){ // 500ms Missing Package -> Every 16ms Do Motion Planner
 						Comm_Down_Flag = 1;
@@ -604,12 +613,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 						motion_planner();
 					}
 				}
-				}
 			}
 			
 			if(chipshoot_timerdelay_flag < 1000)
 				chipshoot_timerdelay_flag++;
 			
+			Shoot_Chip();					//平挑射
 //			if(selftest_timer_flag <= 8)
 //				selftest_timer_flag++;
 	}
@@ -618,6 +627,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 //蜂鸣器鸣叫
 void Buzzer_Ring(){							//蜂鸣器PWM通道打开，频率2K/0.6，占空比0.5
+	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 	htim16.Instance->CCR1=300;
 };
 
@@ -676,7 +686,7 @@ void Is_BatteryLow_BootCharged(){
 	AD_Boot_Cap = AD_Boot_Cap + ADC_value[1];
 	
 	if(AD_Battery_i >= 5){
-		AD_Battery_Last = (7 * AD_Battery + AD_Battery_Last) >> 3;
+		AD_Battery_Last = ((AD_Battery << 2) + (AD_Battery << 1) + AD_Battery + AD_Battery_Last) >> 3;
 		AD_Boot_Cap_Last = AD_Boot_Cap;
 		AD_Battery = AD_Boot_Cap = 0;
 		AD_Battery_i = 0;
@@ -684,11 +694,12 @@ void Is_BatteryLow_BootCharged(){
 	AD_Battery_i ++;
 	
 	//电池电压低于15.2V，196864 = 15.2/25.3*3.3/3.3*65535*5
-	//电池电压高于3.3V，42740 = 3.3/25.3*3.3/3.3*65535*5
-	if((AD_Battery_Last > 122740)&&(AD_Battery_Last < 189600))
-		Buzzer_Ring();
+	//电池电压高于3.3V，42740 = 3.3/25.3*3.3/3.3*65535*5   189600
+	if(AD_Battery_Last < 189600)
+//	if((AD_Battery_Last > 122740)&&(AD_Battery_Last < 189600))
+		htim16.Instance->CCR1=300;
 	else
-		Buzzer_Off();
+		htim16.Instance->CCR1=0;
 		
 	
 	//电容升压到60V，113953 = 60/203.9*3.9/3.3*65535*5
@@ -704,6 +715,7 @@ void Is_BatteryLow_BootCharged(){
 
 //吸球
 void dribber(void){
+//	Robot_drib = 3;
 	if (Robot_drib == 0){
 		drib_power = 0;
 		return;
@@ -713,40 +725,67 @@ void dribber(void){
 	}
 	else {
 		drib_power = drib_power_set[1];
-	}
+	}	
 }
 
 //平挑射
-void Shoot_Chip(){
-	if((Robot_Boot_Power > 0) && (Robot_Is_Boot_charged == 1) && (Robot_Is_Infrared == 1) && (chipshoot_timerdelay_flag >= 1000)){
+uint8_t Shoot_Chip(){
+//////	Robot_Chip_Or_Shoot = 1;
+//////	Robot_Boot_Power = 50;
+//////	if((Robot_Boot_Power > 0) && (chipshoot_timerdelay_flag >= 1000)){
+	
+//////	
+//////	//不用升压test
+//////	if((Robot_Boot_Power > 0) && (Robot_Is_Infrared == 1) && (chipshoot_timerdelay_flag >= 1000)){
+		
+	//inuse
+	if((Robot_Boot_Power > 0) && (Robot_Is_Boot_charged == 1) && (Robot_Is_Infrared == 1) && (chipshoot_timerdelay_flag >= 500)){
 		if(Robot_Chip_Or_Shoot == 1){
 				Robot_Is_Chip = 1;
-				//PWM_SET_VALUE(&htim12,TIM_CHANNEL_1,);
-				htim12.Instance->CCR1 = 65535 - Robot_Boot_Power * 500;
+				
+//////				htim12.Instance->CCR1 = 32000 - Robot_Boot_Power * 250;
+//////				htim12.Instance->CCR2 = 32000;
+//////				htim12.Instance = TIM12;
+			
+				htim12.Instance = TIM12;
+				htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+				htim12.Instance->CCR1 = 10;
+				htim12.Instance->CCR2 = Robot_Boot_Power * 250 + 10;
+			
+				HAL_TIM_PWM_Init(&htim12);
 				HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+				
 				Robot_Status = Robot_Status | (1 << 4);
+				Robot_Boot_Power = 0;
+				chipshoot_timerdelay_flag  = 0;
+				Robot_Chip_Or_Shoot = 0;
+			
+				return 0;	
 		}
-		else{
-				Robot_Is_Chip = 0;
-//				Robot_Status = Robot_Status & 0xe0;
-		}
-
 		if(Robot_Chip_Or_Shoot == 0){
 				Robot_Is_Shoot = 1;
-				//PWM_SET_VALUE(&htim12,TIM_CHANNEL_2,Robot_Boot_Power * 500);
-				htim12.Instance->CCR2 = 65535 - Robot_Boot_Power * 50;
+			
+//////				htim12.Instance->CCR2 = 32000 - Robot_Boot_Power * 250;
+//////				htim12.Instance->CCR1 = 32000;
+//////				htim12.Instance = TIM12;
+
+				htim12.Instance = TIM12;
+				htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+				htim12.Instance->CCR2 = 10;
+				htim12.Instance->CCR1 = Robot_Boot_Power * 250 + 10;
+			
+				HAL_TIM_PWM_Init(&htim12);
 				HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
+				
+				Robot_Chip_Or_Shoot = 0;
 				Robot_Status = Robot_Status | (1 << 5);
+				Robot_Boot_Power = 0;
+				chipshoot_timerdelay_flag  = 0;
+				
+				return 0;
 		}
-		else{
-			Robot_Is_Shoot = 0;
-//			  Robot_Status = Robot_Status & 0xd0;
-		}
-		
-		Robot_Boot_Power = 0;
-		
-		chipshoot_timerdelay_flag  = 0;
 	}
+	return 0;
 }
 
 //电机及其他Timer和PWM初始化
@@ -790,7 +829,7 @@ void Init_Timers(){
 	htim14.Instance->CCR1 = 0;
 	HAL_GPIO_WritePin(MOTORD_RESET_GPIO_Port, MOTORD_RESET_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(MOTORD_MODE_GPIO_Port, MOTORD_MODE_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(MOTORD_DIR_GPIO_Port, MOTORD_DIR_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MOTORD_DIR_GPIO_Port, MOTORD_DIR_Pin, GPIO_PIN_RESET);
 	
 	//4路电机Encoder对应的Timer打开
 	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);	
@@ -815,6 +854,11 @@ void Init_Timers(){
 	//启动ADC转换
 //	memset(ADC_value, 0, sizeof(ADC_value));
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&ADC_value, 32);
+	
+//	HAL_TIM_Base_Start(&htim12);
+//	Robot_Boot_Power = 0;
+//	htim12.Instance->CCR1 = 65535 - Robot_Boot_Power * 50;
+//	HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
 }
 
 ////////////设置占空比PWM
@@ -837,7 +881,7 @@ void Init_Timers(){
 //解包，到每个轮子的速度
 void unpack(uint8_t *Packet){
 	if((Packet[0] & 0xf0) == 0x40){
-		if(robot_num == (Packet[1] & 0x0f) && (Packet[0] & 0x08)){
+		if((robot_num == (Packet[1] & 0x0f)) && (Packet[0] & 0x08)){
 			received_packet_flag = 1;
 			Vx_package = (Packet[2] & 0x7f) + ((Packet[17] & 0xc0) << 1);
 			Vx_package = (Packet[2] & 0x80) ? ( -Vx_package ) : Vx_package;
@@ -850,7 +894,7 @@ void unpack(uint8_t *Packet){
 			Robot_Chip_Or_Shoot = ( Packet[1] >> 6 ) & 0x01;
 			Robot_Boot_Power = Packet[21] & 0x7f;
 		}
-		else if(robot_num == (Packet[5] & 0x0f) && (Packet[0] & 0x04)){
+		else if((robot_num == (Packet[5] & 0x0f)) && (Packet[0] & 0x04)){
 			received_packet_flag = 1;
 			Vx_package = (Packet[6] & 0x7f) + ((Packet[18] & 0xc0) << 1);
 			Vx_package = (Packet[6] & 0x80) ? ( -Vx_package ) : Vx_package;
@@ -863,7 +907,7 @@ void unpack(uint8_t *Packet){
 			Robot_Chip_Or_Shoot = ( Packet[5] >> 6 ) & 0x01;
 			Robot_Boot_Power = Packet[22] & 0x7f;
 		}
-		else if(robot_num == (Packet[9] & 0x0f) && (Packet[0] & 0x02)){
+		else if((robot_num == (Packet[9] & 0x0f)) && (Packet[0] & 0x02)){
 			received_packet_flag = 1;
 			Vx_package = (Packet[10] & 0x7f) + ((Packet[19] & 0xc0) << 1);
 			Vx_package = (Packet[10] & 0x80) ? ( -Vx_package ) : Vx_package;
@@ -876,7 +920,7 @@ void unpack(uint8_t *Packet){
 			Robot_Chip_Or_Shoot = ( Packet[9] >> 6 ) & 0x01;
 			Robot_Boot_Power = Packet[23] & 0x7f;
 		}
-		else if(robot_num == (Packet[13] & 0x0f) && (Packet[0] & 0x01)){
+		else if((robot_num == (Packet[13] & 0x0f)) && (Packet[0] & 0x01)){
 			received_packet_flag = 1;
 			Vx_package = (Packet[14] & 0x7f) + ((Packet[20] & 0xc0) << 1);
 			Vx_package = (Packet[14] & 0x80) ? ( -Vx_package ) : Vx_package;
@@ -889,6 +933,8 @@ void unpack(uint8_t *Packet){
 			Robot_Chip_Or_Shoot = ( Packet[13] >> 6 ) & 0x01;
 			Robot_Boot_Power = Packet[24] & 0x7f;
 		}
+		else 
+			received_packet_flag = 0;
 	}
 		else
 			received_packet_flag = 0;

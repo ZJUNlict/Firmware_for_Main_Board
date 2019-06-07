@@ -7,6 +7,8 @@
 #include "spi.h"
 #include "usart.h"
 #include "tim.h"
+#include "stm32h7xx_hal.h"
+#include "spi.h"
 
 //NRF24L01 驱动函数 
 /****************************************************************************************************/
@@ -112,6 +114,7 @@ uint8_t NRF24L01_TX_Read_Reg(uint8_t regaddr);		                 //读寄存器
 uint8_t NRF24L01_RX_Write_Reg(uint8_t regaddr, uint8_t data);              //写寄存器
 uint8_t NRF24L01_TX_Write_Reg(uint8_t regaddr, uint8_t data);              //写寄存器
 uint8_t NRF24L01_RX_Check(void);                                 //检查NRF24L01是否在位
+uint8_t NRF24L01_RX_DMA_Check(void);                                 //检查NRF24L01是否在位
 uint8_t NRF24L01_TX_Check(void);                                 //检查NRF24L01是否在位
 uint8_t NRF24L01_TxPacket(uint8_t *txbuf);                         //发送一个包的数据
 uint8_t NRF24L01_RxPacket(uint8_t *rxbuf);                         //接收一个包的数据

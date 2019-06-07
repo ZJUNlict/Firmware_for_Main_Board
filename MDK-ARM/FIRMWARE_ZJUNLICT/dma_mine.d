@@ -8,13 +8,13 @@ firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h7xx.h
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h743xx.h
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Include/core_cm7.h
-firmware_zjunlict\dma_mine.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+firmware_zjunlict\dma_mine.o: C:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 firmware_zjunlict\dma_mine.o: ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h
 firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h
 firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-firmware_zjunlict\dma_mine.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+firmware_zjunlict\dma_mine.o: C:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h
 firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h
 firmware_zjunlict\dma_mine.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h
