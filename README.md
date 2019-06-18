@@ -6,7 +6,7 @@ The firmware for the STM32H743 is designed using  [Keil uVision 5.25.2.0](http:/
 
 The pin allocation and related connectivity settings can be found in file Firmware_ZJUNlict.ioc. The figure below shows the overall picture.
 
-![](./Images/Pin_Layout.png)
+![](./Images/Pin_Layout.PNG)
 
 The main features are:
 * 400MHz (could be upgraded to 480MHz with some parameter tuning in clock configuration and timer functions)
