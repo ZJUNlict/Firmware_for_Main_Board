@@ -1,6 +1,6 @@
 firmware_zjunlict\nrf24l01.o: ..\Src\NRF24L01.c
 firmware_zjunlict\nrf24l01.o: ../Inc/NRF24L01.h
-firmware_zjunlict\nrf24l01.o: C:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+firmware_zjunlict\nrf24l01.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 firmware_zjunlict\nrf24l01.o: ../Inc/main.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h
 firmware_zjunlict\nrf24l01.o: ../Inc/stm32h7xx_hal_conf.h
@@ -14,14 +14,17 @@ firmware_zjunlict\nrf24l01.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-firmware_zjunlict\nrf24l01.o: C:\Software\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+firmware_zjunlict\nrf24l01.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+firmware_zjunlict\nrf24l01.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h
+firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_cortex.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc.h
+firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_adc.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_adc_ex.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash_ex.h
@@ -29,7 +32,6 @@ firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_hsem.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h
-firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_mdma.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h
 firmware_zjunlict\nrf24l01.o: ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi.h

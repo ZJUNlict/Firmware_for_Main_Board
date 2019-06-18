@@ -185,7 +185,6 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>3</RvdsVP>
-            <RvdsMve>0</RvdsMve>
             <hadIRAM2>1</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -325,7 +324,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <uGnu>0</uGnu>
             <useXO>0</useXO>
             <v6Lang>6</v6Lang>
@@ -339,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32H743xx,ARM_MATH_CM7,__FPU_PRESENT=1,__TARGET_FPU_VFP,CC_ARM</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                                                                      ../Drivers/STM32H7xx_HAL_Driver/Inc;                                                                      ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;                                                                      ../Drivers/CMSIS/Device/ST/STM32H7xx/Include;                                                                      ../Drivers/CMSIS/Include;                                                                      ..\Inc</IncludePath>
+              <IncludePath>../Inc;                                                                       ../Drivers/STM32H7xx_HAL_Driver/Inc;                                                                       ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy;                                                                       ../Drivers/CMSIS/Device/ST/STM32H7xx/Include;                                                                       ../Drivers/CMSIS/Include;                                                                       ..\Inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
