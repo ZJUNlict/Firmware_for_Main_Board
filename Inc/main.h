@@ -175,6 +175,10 @@ void Error_Handler(void);
 #define SPI1_SCK_GPIO_Port GPIOG
 #define SPI1_IRQ_Pin GPIO_PIN_12
 #define SPI1_IRQ_GPIO_Port GPIOG
+#define F27_RXEN_Pin GPIO_PIN_13
+#define F27_RXEN_GPIO_Port GPIOG
+#define F27_TXEN_Pin GPIO_PIN_14
+#define F27_TXEN_GPIO_Port GPIOG
 #define CURRENT_DRDY_Pin GPIO_PIN_15
 #define CURRENT_DRDY_GPIO_Port GPIOG
 #define MOTOR3_MODE_Pin GPIO_PIN_3

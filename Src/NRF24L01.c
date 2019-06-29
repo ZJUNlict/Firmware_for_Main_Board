@@ -31,6 +31,8 @@ void NRF24L01_RX_Init(void)
 }
 void NRF24L01_TX_Init(void)
 {
+	Set_NRF24L01_F27_TXEN;
+	Clr_NRF24L01_F27_RXEN;
 	Set_NRF24L01_TX_CE;                                    //初始化时先拉高
   Set_NRF24L01_TX_CSN;                                   //初始化时先拉高
 
@@ -44,12 +46,12 @@ void NRF24L01_TX_Init(void)
 uint8_t NRF24L01_RX_Check(void)
 {
 	uint8_t buf[5]={0XA5,0XA5,0XA5,0XA5,0XA5};
-	uint8_t buf1[5];
+	uint8_t rx_buf1[5];
 	uint8_t i; 
 	NRF24L01_RX_Write_Buf(SPI_WRITE_REG+TX_ADDR,buf,5);//写入5个字节的地址.	
-	NRF24L01_RX_Read_Buf(TX_ADDR,buf1,5);              //读出写入的地址
+	NRF24L01_RX_Read_Buf(TX_ADDR,rx_buf1,5);              //读出写入的地址
 	for(i=0;i<5;i++){
-		if(buf1[i] != 0XA5)
+		if(rx_buf1[i] != 0XA5)
 			break;
 	};
 	if(i!=5)
@@ -138,12 +140,12 @@ uint8_t NRF24L01_RX_Check(void)
 uint8_t NRF24L01_TX_Check(void)
 {
 	uint8_t buf[5]={0XA5,0XA5,0XA5,0XA5,0XA5};
-	uint8_t buf1[5];
+	uint8_t tx_buf1[5];
 	uint8_t i; 
 	NRF24L01_TX_Write_Buf(SPI_WRITE_REG+TX_ADDR,buf,5);//写入5个字节的地址.	
-	NRF24L01_TX_Read_Buf(TX_ADDR,buf1,5);              //读出写入的地址
+	NRF24L01_TX_Read_Buf(TX_ADDR,tx_buf1,5);              //读出写入的地址
 	for(i=0;i<5;i++){
-		if(buf1[i] != 0XA5)
+		if(tx_buf1[i] != 0XA5)
 			break;
 	};
 	if(i!=5)
@@ -296,7 +298,7 @@ uint8_t NRF24L01_TX_Write_Buf(uint8_t regaddr, uint8_t *pBuf, uint8_t datalen)
 //返回值:发送完成状况
 uint8_t NRF24L01_TxPacket(uint8_t *txbuf)
 { 
-//	NRF24L01_TX_Write_Reg(FLUSH_TX,0xff);               //清除TX FIFO寄存器  
+	NRF24L01_TX_Write_Reg(FLUSH_TX,0xff);               //清除TX FIFO寄存器  
 	Clr_NRF24L01_TX_CE;
   NRF24L01_TX_Write_Buf(WR_TX_PLOAD,txbuf,TX_PLOAD_WIDTH);//写数据到TX BUF  25个字节
  	Set_NRF24L01_TX_CE;                                     //启动发送	   

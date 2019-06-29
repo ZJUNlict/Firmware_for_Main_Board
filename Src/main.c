@@ -82,6 +82,12 @@ void motion_planner(void);
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+//#define ROBOT_50W
+#define ROBOT_70W
+//#define ENCODER_360
+#define ENCODER_1000
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,10 +116,12 @@ uint8_t Comm_Down_Flag = 0;
 uint8_t Robot_Chipped = 0, Robot_Shooted = 0;
 uint8_t Robot_Status = 0, Last_Robot_Status = 0;
 int8_t Left_Report_Package = 0;
-uint16_t drib_power, drib_power_set[4] = {0, 1000, 2000, 3200};
-uint8_t selftest_vel_mode = 0x02, selftest_drib_mode = 0x03, selftest_chip_mode = 0x04, selftest_shoot_mode = 0x05, selftest_discharge_mode = 0x06; 
+uint16_t drib_power, drib_power_set[4] = {0, 1000, 2000, 3600};
+//uint8_t selftest_vel_mode = 0x02, selftest_drib_mode = 0x03, selftest_chip_mode = 0x04, selftest_shoot_mode = 0x05, selftest_discharge_mode = 0x06; 
 //ALIGN_32BYTES(__attribute__((section (".RAM_D2"))) )
 uint16_t ADC_value[32];   			//存放ADC采集数据
+
+int16_t Self_Test_Discharge_Flag = 1000;
 
 //电池电压与电容电压累计值
 uint32_t AD_Battery = 0,AD_Battery_Last = 217586, AD_Boot_Cap = 0, AD_Boot_Cap_Last, Total_Missed_Package_Num = 0, Period_2ms_Since_Last_Zero_Motion_Planner = 0;
@@ -182,13 +190,36 @@ double PWM_Pulse_Motor1, PWM_Pulse_Motor2, PWM_Pulse_Motor3, PWM_Pulse_Motor4, P
 //实际PWM 占空value
 int PWM_Pulse_Motor1_value, PWM_Pulse_Motor2_value, PWM_Pulse_Motor3_value, PWM_Pulse_Motor4_value;
 
-//速度转换系数
-double Vel_k2 = 0.520573;                                     //double Vel_k2 = 3.18 *  4 * 360 / 2 / 3.1415926 / 2.8 / 1000 * 2;		//  cm/s  ----->>>>>>>   count/2ms
+////速度转换系数
+//double Vel_k2 = 3.18 *  4 * 360 / 2 / 3.1415926 / 2.8 / 1000 * 2;		//  cm/s  ----->>>>>>>   count/2ms
 
-//PI参数
+#ifdef ENCODER_1000
+const double Vel_k2 = 1.446036;
+#endif
+
+#ifdef ENCODER_360
+const double Vel_k2 = 0.520573;
+#endif
+
+#if defined(ENCODER_1000) && defined(ROBOT_50W)
+const uint32_t Motor_KP = 40, Motor_KI = 11;
+const int PID_I_Limit = 720; //7995 / Motor_KI;
+#endif
+
+#if defined(ENCODER_360) && defined(ROBOT_50W)
 const uint32_t Motor_KP = 110, Motor_KI = 30;
+const int PID_I_Limit = 266; //7995 / Motor_KI;
+#endif
 
-int PID_I_Limit = 266; //7995 / Motor_KI;
+#if defined(ENCODER_1000) && defined(ROBOT_70W)
+const uint32_t Motor_KP = 40, Motor_KI = 11;         //Under Testing
+const int PID_I_Limit = 720; //7995 / Motor_KI;
+#endif
+
+#if defined(ENCODER_360) && defined(ROBOT_70W)
+const uint32_t Motor_KP = 110, Motor_KI = 30;         //Under Testing
+const int PID_I_Limit = 266; //7995 / Motor_KI;
+#endif
 
 //PID中I积分项
 int Motor_EK_Motor1 = 0, Motor_EK_Motor2 = 0, Motor_EK_Motor3 = 0,Motor_EK_Motor4 = 0;
@@ -273,69 +304,125 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-////////////////	if((robot_set == 1) && (tx_mode == 0)){
-////////////////		
-////////////////		//蜂鸣器叫100ms
-////////////////		HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
-////////////////		htim16.Instance->CCR1 = 300;
-////////////////		//PWM_SET_VALUE(&htim16,TIM_CHANNEL_1,300);
-////////////////		HAL_Delay(100);
-////////////////		//PWM_SET_VALUE(&htim16,TIM_CHANNEL_1,0);
-////////////////		htim16.Instance->CCR1 = 0;
-////////////////		
-////////////////		while(1){			
-////////////////			Init_PCA9539();   				//PCA9539初始化
-////////////////			
-////////////////			switch(robot_set){
-////////////////				case 2 :
-////////////////					if(selftest_timer_flag  > 8){
-////////////////						selftest_timer_flag = 0;
-////////////////						
-////////////////						if(tx_mode <= 8)
-////////////////							Vx_package = 10 * tx_mode;
-////////////////						else
-////////////////							Vx_package = 10 * (tx_mode - 17);
-////////////////						motion_planner();
-////////////////					}
-//////////////////					Vx_package = 20;
-//////////////////					motion_planner();
-////////////////				break;
-////////////////				
-//////////////////				Vx_package = 0;
-//////////////////				motion_planner();
-////////////////					
-////////////////				case 3 :
-////////////////					Is_Infrared();				//是否触发红外
-////////////////					if(Robot_Is_Infrared == 0){
-////////////////						Robot_drib = tx_mode;
-////////////////						dribber();
-////////////////					}
-////////////////				break;
-////////////////				
-//////////////////				Robot_drib = 0;
-//////////////////				dribber();
-////////////////					
-////////////////				case 4 :
-////////////////					Is_BatteryLow_BootCharged();			//电池电压是否低于15.2V，电容是否充电到60V
-////////////////					Robot_Boot_Power = 10 * tx_mode;
-////////////////					Robot_Chip_Or_Shoot = 1;
-////////////////					Shoot_Chip();	
-////////////////				break;
-////////////////				
-////////////////				case 5 :
-////////////////					Is_BatteryLow_BootCharged();			//电池电压是否低于15.2V，电容是否充电到60V
-////////////////					Robot_Boot_Power = 10 * tx_mode;
-////////////////					Robot_Chip_Or_Shoot = 0;
-////////////////					Shoot_Chip();	
-////////////////				break;
-////////////////				
-////////////////				case 6 :
-////////////////					htim12.Instance->CCR1 = 10 * tx_mode * 500;
-////////////////					HAL_Delay(2);
-////////////////				break;	
-////////////////			}
-////////////////		}
-////////////////	}
+	if((robot_set == 1) && (tx_mode == 0)){					// Self Test Mode
+		
+		Buzzer_Ring();
+		HAL_Delay(100);
+		Buzzer_Off();
+		HAL_Delay(200);
+		Buzzer_Ring();
+		HAL_Delay(100);
+		Buzzer_Off();
+		HAL_Delay(300);
+		Buzzer_Ring();
+		HAL_Delay(100);
+		Buzzer_Off();
+		
+		while(1){			
+			Init_PCA9539();   											//PCA9539 Get Set Num Tx Rx Number
+			Is_Infrared();
+			HAL_Delay(1);
+			switch(robot_set){
+				case 2 :
+						drib_power = 0;
+						Robot_Boot_Power = 0;
+						if(tx_mode <= 8)
+							Vx_package = 10 * tx_mode;
+						else
+							Vx_package = 10 * (tx_mode - 17);
+						motion_planner();
+				break;
+						
+				case 3 :
+					Robot_Boot_Power = 0;
+					Vx_package = 0;
+					motion_planner();
+					if(Robot_Is_Infrared == 0){
+						drib_power = drib_power_set[1];
+					}
+					else{
+						drib_power = drib_power_set[3];
+					}
+				break;
+
+				case 4 :
+					drib_power = 0;
+					Vx_package = 0;
+					motion_planner();
+					Is_BatteryLow_BootCharged();			//电池电压是否低于15.2V，电容是否充电到60V
+					Robot_Boot_Power = 10 * tx_mode;
+					if (Robot_Boot_Power > 127) {
+						Robot_Boot_Power = 127;
+					}
+					if (Robot_Is_Boot_charged && (Robot_Boot_Power != 0) && (Robot_Is_Infrared == 1) && (Self_Test_Discharge_Flag == 0)){
+						htim12.Instance = TIM12;
+						htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+						htim12.Instance->CCR1 = 10;
+						htim12.Instance->CCR2 = Robot_Boot_Power * 250 + 10;
+						HAL_TIM_PWM_Init(&htim12);
+						HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+						Self_Test_Discharge_Flag = 1000;
+					}
+					else{
+						Self_Test_Discharge_Flag --;
+						if (Self_Test_Discharge_Flag<0) Self_Test_Discharge_Flag = 0;
+					}
+				break;
+				
+				case 5 :
+					drib_power = 0;
+					Vx_package = 0;
+					motion_planner();
+					Is_BatteryLow_BootCharged();			//电池电压是否低于15.2V，电容是否充电到60V
+					Robot_Boot_Power = 10 * tx_mode;
+					if (Robot_Boot_Power > 127) {
+						Robot_Boot_Power = 127;
+					}
+					if (Robot_Is_Boot_charged && (Robot_Boot_Power != 0) && (Robot_Is_Infrared == 1) && (Self_Test_Discharge_Flag == 0)){
+						htim12.Instance = TIM12;
+						htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+						htim12.Instance->CCR1 = Robot_Boot_Power * 250 + 10;
+						htim12.Instance->CCR2 = 10;
+						HAL_TIM_PWM_Init(&htim12);
+						HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
+						Self_Test_Discharge_Flag = 1000;
+					}
+					else{
+						Self_Test_Discharge_Flag --;
+						if (Self_Test_Discharge_Flag<0) Self_Test_Discharge_Flag = 0;
+					}
+				break;
+				
+				case 6 :
+					drib_power = 0;
+					Vx_package = 0;
+					motion_planner();
+					Is_BatteryLow_BootCharged();
+					Robot_Boot_Power = 50;
+					if (Robot_Is_Boot_charged && (Robot_Boot_Power != 0) && (Self_Test_Discharge_Flag == 0)){
+						htim12.Instance = TIM12;
+						htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+						htim12.Instance->CCR1 = 10;
+						htim12.Instance->CCR2 = Robot_Boot_Power * 250 + 10;
+						HAL_TIM_PWM_Init(&htim12);
+						HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+						Self_Test_Discharge_Flag = 1000;
+					}
+					else{
+						Self_Test_Discharge_Flag --;
+						if (Self_Test_Discharge_Flag<0) Self_Test_Discharge_Flag = 0;
+					}
+				break;	
+				default :
+					drib_power = 0;
+					Vx_package = 0;
+					Robot_Boot_Power = 0;
+					motion_planner();
+				break;
+			}
+		}
+	}
+	
   while(1)
   {
 		
@@ -343,11 +430,11 @@ int main(void)
 //		sprintf(temp, "%d", AD_Battery_Last);	
 //		HAL_UART_Transmit(&huart3, &robot_num, 1, 0xffff);
 		
-////		//接收2401 check
-////		if(NRF24L01_TX_Check() == 0){
-////			HAL_GPIO_TogglePin(TX_COM_GPIO_Port, TX_COM_Pin);
-////			HAL_Delay(100);
-////		}
+//////		//接收2401 check
+//////		if(NRF24L01_TX_Check() == 0){
+//////			HAL_GPIO_TogglePin(TX_COM_GPIO_Port, TX_COM_Pin);
+//////			HAL_Delay(100);
+//////		}
 //////		if(NRF24L01_RX_Check() == 0){
 //////			HAL_GPIO_TogglePin(RX_COM_GPIO_Port, RX_COM_Pin);
 //////			HAL_Delay(100);
@@ -357,11 +444,11 @@ int main(void)
 //////		NRF24L01_RX_DMA_Check();
 //////		HAL_Delay(100);
 		
-		if(Received_packet == 30){
+		if(Received_packet > 30){
 			HAL_GPIO_TogglePin(RX_COM_GPIO_Port, RX_COM_Pin);
 			Received_packet = 0;
 		};
-		if(transmitted_packet == 30){
+		if(transmitted_packet > 30){
 			HAL_GPIO_TogglePin(TX_COM_GPIO_Port, TX_COM_Pin);
 			transmitted_packet = 0;
 		}
@@ -443,8 +530,8 @@ void SystemClock_Config(void)
                               |RCC_PERIPHCLK_ADC|RCC_PERIPHCLK_I2C4
                               |RCC_PERIPHCLK_CKPER;
   PeriphClkInitStruct.PLL2.PLL2M = 1;
-  PeriphClkInitStruct.PLL2.PLL2N = 19;
-  PeriphClkInitStruct.PLL2.PLL2P = 2;
+  PeriphClkInitStruct.PLL2.PLL2N = 32;
+  PeriphClkInitStruct.PLL2.PLL2P = 4;
   PeriphClkInitStruct.PLL2.PLL2Q = 2;
   PeriphClkInitStruct.PLL2.PLL2R = 2;
   PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
@@ -470,17 +557,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == htim5.Instance)
 	{
-			//码盘读数与计时器读数
-			Encoder_count_Motor1 = - (int16_t)(__HAL_TIM_GET_COUNTER(&htim1));
+			//码盘读数与计时器读数  差分码盘
+			#ifdef ENCODER_1000
+			Encoder_count_Motor1 =  (int16_t)(__HAL_TIM_GET_COUNTER(&htim1));
 			__HAL_TIM_SET_COUNTER(&htim1,0);
-			Encoder_count_Motor2 = - (int16_t)(__HAL_TIM_GET_COUNTER(&htim2));
+			Encoder_count_Motor2 =  (int16_t)(__HAL_TIM_GET_COUNTER(&htim2));
 			__HAL_TIM_SET_COUNTER(&htim2,0);
-			Encoder_count_Motor3 = - (int16_t)(__HAL_TIM_GET_COUNTER(&htim3)) ;
+			Encoder_count_Motor3 =  (int16_t)(__HAL_TIM_GET_COUNTER(&htim3)) ;
 			__HAL_TIM_SET_COUNTER(&htim3,0);
-			Encoder_count_Motor4 = - (int16_t)(__HAL_TIM_GET_COUNTER(&htim4));
+			Encoder_count_Motor4 =  (int16_t)(__HAL_TIM_GET_COUNTER(&htim4));
 			__HAL_TIM_SET_COUNTER(&htim4,0);
+			#endif
 
-		
+			#ifdef ENCODER_360
+			Encoder_count_Motor1 =  -(int16_t)(__HAL_TIM_GET_COUNTER(&htim1));
+			__HAL_TIM_SET_COUNTER(&htim1,0);
+			Encoder_count_Motor2 =  -(int16_t)(__HAL_TIM_GET_COUNTER(&htim2));
+			__HAL_TIM_SET_COUNTER(&htim2,0);
+			Encoder_count_Motor3 =  -(int16_t)(__HAL_TIM_GET_COUNTER(&htim3)) ;
+			__HAL_TIM_SET_COUNTER(&htim3,0);
+			Encoder_count_Motor4 =  -(int16_t)(__HAL_TIM_GET_COUNTER(&htim4));
+			__HAL_TIM_SET_COUNTER(&htim4,0);
+			#endif
 			//计算轮子转速
 			Vel_Now_Motor1 = Encoder_count_Motor1;
 			Vel_Now_Motor2 = Encoder_count_Motor2;
@@ -625,7 +723,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 //蜂鸣器鸣叫
 void Buzzer_Ring(){							//蜂鸣器PWM通道打开，频率2K/0.6，占空比0.5
-	HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
+	//HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1);
 	htim16.Instance->CCR1=300;
 };
 
@@ -681,12 +779,11 @@ void Is_Infrared(){
 void Is_BatteryLow_BootCharged(){
 	//SCB_InvalidateDCache_by_Addr ((uint32_t *)ADC_value, 2);
 	AD_Battery = AD_Battery + ADC_value[0];
-	AD_Boot_Cap = AD_Boot_Cap + ADC_value[1];
+	AD_Boot_Cap = ADC_value[1];
 	
 	if(AD_Battery_i >= 5){
 		AD_Battery_Last = ((AD_Battery << 2) + (AD_Battery << 1) + AD_Battery + AD_Battery_Last) >> 3;
-		AD_Boot_Cap_Last = AD_Boot_Cap;
-		AD_Battery = AD_Boot_Cap = 0;
+		AD_Battery = 0;
 		AD_Battery_i = 0;
 	}
 	AD_Battery_i ++;
@@ -700,8 +797,8 @@ void Is_BatteryLow_BootCharged(){
 		htim16.Instance->CCR1=0;
 		
 	
-	//电容升压到60V，113953 = 60/203.9*3.9/3.3*65535*5
-	if(AD_Boot_Cap_Last > 73953){
+	//电容升压到60V，11797 = 60/1010*10/3.3*65535
+	if(AD_Boot_Cap > 12000){
 		Robot_Is_Boot_charged = 1;
 		HAL_GPIO_WritePin(BOOT_DONE_GPIO_Port, BOOT_DONE_Pin, GPIO_PIN_RESET);
 	}

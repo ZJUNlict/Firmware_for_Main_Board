@@ -92,6 +92,15 @@
 
 #define READ_NRF24L01_TX_IRQ    HAL_GPIO_ReadPin(SPI2_IRQ_GPIO_Port, SPI2_IRQ_Pin) 
 
+
+//NRF2401F27发送使能
+#define Set_NRF24L01_F27_TXEN    HAL_GPIO_WritePin(F27_TXEN_GPIO_Port, F27_TXEN_Pin, GPIO_PIN_SET) 
+#define Clr_NRF24L01_F27_TXEN    HAL_GPIO_WritePin(F27_TXEN_GPIO_Port, F27_TXEN_Pin, GPIO_PIN_RESET) 
+
+//NRF2401F27接收使能
+#define Set_NRF24L01_F27_RXEN    HAL_GPIO_WritePin(F27_RXEN_GPIO_Port, F27_RXEN_Pin, GPIO_PIN_SET) 
+#define Clr_NRF24L01_F27_RXEN    HAL_GPIO_WritePin(F27_RXEN_GPIO_Port, F27_RXEN_Pin, GPIO_PIN_RESET) 
+
 //NRF24L01发送接收数据宽度定义
 #define TX_ADR_WIDTH    5                               //5字节的地址宽度
 #define RX_ADR_WIDTH    5                               //5字节的地址宽度
