@@ -15,28 +15,32 @@ const uint8_t RX_ADDRESS[RX_ADR_WIDTH]={0x00,0x98,0x45,0x71,0x10}; //Ğ¡³µ½ÓÊÕµØÖ
 
 extern uint8_t tx_freq;	//24L01ÆµÂÊ³õÊ¼»¯Îª90
 extern uint8_t rx_freq;	//24L01ÆµÂÊ³õÊ¼»¯Îª90
-
-////uint8_t bandwidth = 0x26;  //´ø¿í³õÊ¼»¯Îª0.25Mbps
-uint8_t bandwidth = 0x06;  //´ø¿í³õÊ¼»¯Îª0.25Mbps
+#ifdef bandwidth_1Mbps
+uint8_t bandwidth = 0x06;  //´ø¿í³õÊ¼»¯1Mbps
+#endif
+#ifdef bandwidth_250kbps
+uint8_t bandwidth = 0x26;  //´ø¿í³õÊ¼»¯Îª0.25Mbps
+#endif
 
 //³õÊ¼»¯24L01µÄIO¿Ú
 void NRF24L01_RX_Init(void)
 {
+	Set_NRF24L01_F27_RXEN;
+	Clr_NRF24L01_F27_TXEN;
+	
 	Set_NRF24L01_RX_CE;                                    //³õÊ¼»¯Ê±ÏÈÀ­¸ß
   Set_NRF24L01_RX_CSN;                                   //³õÊ¼»¯Ê±ÏÈÀ­¸ß
 
-	MX_SPI1_Init();                                     //³õÊ¼»¯SPI
+	MX_SPI2_Init();                                     //³õÊ¼»¯SPI
 	Clr_NRF24L01_RX_CE; 	                                  //Ê¹ÄÜ24L01
 	Set_NRF24L01_RX_CSN;                                   //SPIÆ¬Ñ¡È¡Ïû
 }
 void NRF24L01_TX_Init(void)
 {
-	Set_NRF24L01_F27_TXEN;
-	Clr_NRF24L01_F27_RXEN;
 	Set_NRF24L01_TX_CE;                                    //³õÊ¼»¯Ê±ÏÈÀ­¸ß
   Set_NRF24L01_TX_CSN;                                   //³õÊ¼»¯Ê±ÏÈÀ­¸ß
 
-	MX_SPI2_Init();                                     //³õÊ¼»¯SPI
+	MX_SPI1_Init();                                     //³õÊ¼»¯SPI
 	Clr_NRF24L01_TX_CE; 	                                  //Ê¹ÄÜ24L01
 	Set_NRF24L01_TX_CSN;                                   //SPIÆ¬Ñ¡È¡Ïû
 }
@@ -159,8 +163,8 @@ uint8_t NRF24L01_RX_Write_Reg(uint8_t regaddr,uint8_t data)
   Clr_NRF24L01_RX_CSN;                    //Ê¹ÄÜSPI´«Êä
 	
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT); //·¢ËÍ¼Ä´æÆ÷ºÅ 
-	HAL_SPI_Transmit(&hspi1, &data, 1, NRF24L01_TIME_OUT);           //Ğ´Èë¼Ä´æÆ÷µÄÖµ
+	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT); //·¢ËÍ¼Ä´æÆ÷ºÅ 
+	HAL_SPI_Transmit(&hspi2, &data, 1, NRF24L01_TIME_OUT);           //Ğ´Èë¼Ä´æÆ÷µÄÖµ
 	
 //////	//DMA
 //////	HAL_SPI_TransmitReceive_DMA(&hspi1, &regaddr, &status, 1); //·¢ËÍ¼Ä´æÆ÷ºÅ 
@@ -175,8 +179,8 @@ uint8_t NRF24L01_TX_Write_Reg(uint8_t regaddr,uint8_t data)
   Clr_NRF24L01_TX_CSN;                    //Ê¹ÄÜSPI´«Êä
 	
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT); //·¢ËÍ¼Ä´æÆ÷ºÅ 
-	HAL_SPI_Transmit(&hspi2, &data, 1, NRF24L01_TIME_OUT);           //Ğ´Èë¼Ä´æÆ÷µÄÖµ
+	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT); //·¢ËÍ¼Ä´æÆ÷ºÅ 
+	HAL_SPI_Transmit(&hspi1, &data, 1, NRF24L01_TIME_OUT);           //Ğ´Èë¼Ä´æÆ÷µÄÖµ
 	
 //////	//DMA
 //////	HAL_SPI_TransmitReceive_DMA(&hspi2, &regaddr, &status, 1); //·¢ËÍ¼Ä´æÆ÷ºÅ 
@@ -192,8 +196,8 @@ uint8_t NRF24L01_RX_Read_Reg(uint8_t regaddr)
  	Clr_NRF24L01_RX_CSN;                //Ê¹ÄÜSPI´«Êä
 	
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
-  HAL_SPI_Receive(&hspi1, &reg_val, 1, NRF24L01_TIME_OUT);		//¶ÁÈ¡¼Ä´æÆ÷ÄÚÈİ
+	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
+  HAL_SPI_Receive(&hspi2, &reg_val, 1, NRF24L01_TIME_OUT);		//¶ÁÈ¡¼Ä´æÆ÷ÄÚÈİ
 	
 //////	//DMA
 //////	HAL_SPI_TransmitReceive_DMA(&hspi1, &regaddr, &status, 1); //·¢ËÍ¼Ä´æÆ÷ºÅ
@@ -208,8 +212,8 @@ uint8_t NRF24L01_TX_Read_Reg(uint8_t regaddr)
  	Clr_NRF24L01_TX_CSN;                //Ê¹ÄÜSPI´«Êä
 	
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
-  HAL_SPI_Receive(&hspi2, &reg_val, 1, NRF24L01_TIME_OUT);		//¶ÁÈ¡¼Ä´æÆ÷ÄÚÈİ
+	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
+  HAL_SPI_Receive(&hspi1, &reg_val, 1, NRF24L01_TIME_OUT);		//¶ÁÈ¡¼Ä´æÆ÷ÄÚÈİ
 	
 //////	//DMA
 //////	HAL_SPI_TransmitReceive_DMA(&hspi2, &regaddr, &status, 1);     //·¢ËÍ¼Ä´æÆ÷ºÅ
@@ -227,8 +231,8 @@ void NRF24L01_RX_Read_Buf(uint8_t regaddr,uint8_t *pBuf,uint8_t datalen)
 	Clr_NRF24L01_RX_CSN;                     //Ê¹ÄÜSPI´«Êä
 
 	//×èÈûĞÍ
-	HAL_SPI_Transmit(&hspi1, &regaddr, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅÖ
-	HAL_SPI_Receive(&hspi1, pBuf, datalen, NRF24L01_TIME_OUT);     //¶Á³öÊı¾İ
+	HAL_SPI_Transmit(&hspi2, &regaddr, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅÖ
+	HAL_SPI_Receive(&hspi2, pBuf, datalen, NRF24L01_TIME_OUT);     //¶Á³öÊı¾İ
 	
 ////////	//DMA
 ////////	HAL_SPI_Transmit_DMA(&hspi1, &regaddr, 1);     //·¢ËÍ¼Ä´æÆ÷ºÅ?
@@ -244,8 +248,8 @@ void NRF24L01_TX_Read_Buf(uint8_t regaddr,uint8_t *pBuf,uint8_t datalen)
 	Clr_NRF24L01_TX_CSN;                     //Ê¹ÄÜSPI´«Êä
 
 	//×èÈûĞÍ
-	HAL_SPI_Transmit(&hspi2, &regaddr, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
-	HAL_SPI_Receive(&hspi2, pBuf, datalen, NRF24L01_TIME_OUT);     //¶Á³öÊı¾İ
+	HAL_SPI_Transmit(&hspi1, &regaddr, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
+	HAL_SPI_Receive(&hspi1, pBuf, datalen, NRF24L01_TIME_OUT);     //¶Á³öÊı¾İ
 	
 //////	//DMA
 //////	HAL_SPI_Transmit_DMA(&hspi2, &regaddr, 1);     //·¢ËÍ¼Ä´æÆ÷ºÅ
@@ -263,8 +267,8 @@ uint8_t NRF24L01_RX_Write_Buf(uint8_t regaddr, uint8_t *pBuf, uint8_t datalen)
  	Clr_NRF24L01_RX_CSN;                                    //Ê¹ÄÜSPI´«Êä
 
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
-	HAL_SPI_Transmit(&hspi1, pBuf, datalen, NRF24L01_TIME_OUT);     //Ğ´ÈëÊı¾İ	
+	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
+	HAL_SPI_Transmit(&hspi2, pBuf, datalen, NRF24L01_TIME_OUT);     //Ğ´ÈëÊı¾İ	
 
 ////////	//DMA
 ////////	HAL_SPI_TransmitReceive_DMA(&hspi1, &regaddr, &status, 1);     //·¢ËÍ¼Ä´æÆ÷ºÅ
@@ -282,8 +286,8 @@ uint8_t NRF24L01_TX_Write_Buf(uint8_t regaddr, uint8_t *pBuf, uint8_t datalen)
  	Clr_NRF24L01_TX_CSN;                                    //Ê¹ÄÜSPI´«Êä
 
 	//×èÈûĞÍ
-	HAL_SPI_TransmitReceive(&hspi2, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
-	HAL_SPI_Transmit(&hspi2, pBuf, datalen, NRF24L01_TIME_OUT);     //Ğ´ÈëÊı¾İ	
+	HAL_SPI_TransmitReceive(&hspi1, &regaddr, &status, 1, NRF24L01_TIME_OUT);     //·¢ËÍ¼Ä´æÆ÷ºÅ
+	HAL_SPI_Transmit(&hspi1, pBuf, datalen, NRF24L01_TIME_OUT);     //Ğ´ÈëÊı¾İ	
 	 
 //////	//DMA
 //////	HAL_SPI_TransmitReceive_DMA(&hspi2, &regaddr, &status, 1);     //·¢ËÍ¼Ä´æÆ÷ºÅ

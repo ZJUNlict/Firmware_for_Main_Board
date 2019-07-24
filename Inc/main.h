@@ -190,7 +190,12 @@ void Error_Handler(void);
 #define MOTOR3_RESET_Pin GPIO_PIN_8
 #define MOTOR3_RESET_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
+//#define ROBOT_50W
+#define ROBOT_70W
+//#define ENCODER_360
+#define ENCODER_1000
+#define bandwidth_1Mbps
+//#define bandwidth_250kbps
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FIRMWARE_ZJUNLICT\FIRMWARE_ZJUNLICT.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FIRMWARE_ZJUNLICT\FIRMWARE_ZJUNLICT.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sat Jun 29 16:36:45 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Jul 05 20:03:34 2019
 <BR><P>
 <H3>Maximum Stack Usage =        392 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1023,8 +1023,7 @@ Global Symbols
 <P><STRONG><a name="[c4]"></a>HAL_ADC_IRQHandler</STRONG> (Thumb, 840 bytes, Stack size 40 bytes, stm32h7xx_hal_adc.o(i.HAL_ADC_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = HAL_ADC_IRQHandler
 </UL>
-<BR>[Calls]<UL><LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_LevelOutOfWindowCallback
-<LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_ErrorCallback
+<BR>[Calls]<UL><LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_ErrorCallback
 <LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_ConvCpltCallback
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADCEx_LevelOutOfWindow3Callback
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADCEx_LevelOutOfWindow2Callback
@@ -1036,6 +1035,7 @@ Global Symbols
 <LI><a href="#[cb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_ADC_INJ_IsConversionOngoing
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_ADC_GetMultimode
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_ADC_GetMultiDMATransfer
+<LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_ADC_LevelOutOfWindowCallback
 </UL>
 <BR>[Called By]<UL><LI><a href="#[1f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ADC_IRQHandler
 </UL>
@@ -1808,7 +1808,7 @@ Global Symbols
 <LI><a href="#[159]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init_Timers
 </UL>
 
-<P><STRONG><a name="[129]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 1476 bytes, Stack size 8 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
+<P><STRONG><a name="[129]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 1470 bytes, Stack size 8 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 168<LI>Call Chain = HAL_TIM_PeriodElapsedCallback &rArr; NRF24L01_RxPacket &rArr; NRF24L01_RX_Read_Reg &rArr; HAL_SPI_Receive &rArr; HAL_SPI_TransmitReceive &rArr; SPI_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_TogglePin
@@ -1909,7 +1909,7 @@ Global Symbols
 <P><STRONG><a name="[5]"></a>HardFault_Handler</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32h7xx_it.o(i.HardFault_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h743xx.o(RESET)
 </UL>
-<P><STRONG><a name="[158]"></a>Init_PCA9539</STRONG> (Thumb, 178 bytes, Stack size 40 bytes, main.o(i.Init_PCA9539))
+<P><STRONG><a name="[158]"></a>Init_PCA9539</STRONG> (Thumb, 234 bytes, Stack size 40 bytes, main.o(i.Init_PCA9539))
 <BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = Init_PCA9539 &rArr; HAL_I2C_Mem_Read &rArr; I2C_RequestMemoryRead &rArr; I2C_WaitOnTXISFlagUntilTimeout &rArr; I2C_IsAcknowledgeFailed
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Mem_Read
@@ -2034,7 +2034,7 @@ Global Symbols
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NRF24L01_RX_Init
+<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NRF24L01_TX_Init
 </UL>
 
 <P><STRONG><a name="[16a]"></a>MX_SPI2_Init</STRONG> (Thumb, 82 bytes, Stack size 8 bytes, spi.o(i.MX_SPI2_Init))
@@ -2044,7 +2044,7 @@ Global Symbols
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NRF24L01_TX_Init
+<LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NRF24L01_RX_Init
 </UL>
 
 <P><STRONG><a name="[16b]"></a>MX_TIM12_Init</STRONG> (Thumb, 122 bytes, Stack size 32 bytes, tim.o(i.MX_TIM12_Init))
@@ -2175,10 +2175,10 @@ Global Symbols
 <P><STRONG><a name="[4]"></a>NMI_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_it.o(i.NMI_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h743xx.o(RESET)
 </UL>
-<P><STRONG><a name="[178]"></a>NRF24L01_RX_Init</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_RX_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = NRF24L01_RX_Init &rArr; MX_SPI1_Init &rArr; HAL_SPI_Init &rArr; HAL_SPI_MspInit &rArr; HAL_NVIC_SetPriority &rArr; __NVIC_SetPriority
+<P><STRONG><a name="[178]"></a>NRF24L01_RX_Init</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_RX_Init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = NRF24L01_RX_Init &rArr; MX_SPI2_Init &rArr; HAL_SPI_Init &rArr; HAL_SPI_MspInit &rArr; HAL_NVIC_SetPriority &rArr; __NVIC_SetPriority
 </UL>
-<BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI1_Init
+<BR>[Calls]<UL><LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI2_Init
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -2235,10 +2235,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PeriodElapsedCallback
 </UL>
 
-<P><STRONG><a name="[17d]"></a>NRF24L01_TX_Init</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_TX_Init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = NRF24L01_TX_Init &rArr; MX_SPI2_Init &rArr; HAL_SPI_Init &rArr; HAL_SPI_MspInit &rArr; HAL_NVIC_SetPriority &rArr; __NVIC_SetPriority
+<P><STRONG><a name="[17d]"></a>NRF24L01_TX_Init</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_TX_Init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = NRF24L01_TX_Init &rArr; MX_SPI1_Init &rArr; HAL_SPI_Init &rArr; HAL_SPI_MspInit &rArr; HAL_NVIC_SetPriority &rArr; __NVIC_SetPriority
 </UL>
-<BR>[Calls]<UL><LI><a href="#[16a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI2_Init
+<BR>[Calls]<UL><LI><a href="#[169]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_SPI1_Init
 <LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -2266,7 +2266,7 @@ Global Symbols
 <LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NRF24L01_TxPacket
 </UL>
 
-<P><STRONG><a name="[144]"></a>NRF24L01_TxPacket</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_TxPacket))
+<P><STRONG><a name="[144]"></a>NRF24L01_TxPacket</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, nrf24l01.o(i.NRF24L01_TxPacket))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = NRF24L01_TxPacket &rArr; NRF24L01_TX_Write_Buf &rArr; HAL_SPI_TransmitReceive &rArr; SPI_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -2279,7 +2279,7 @@ Global Symbols
 <P><STRONG><a name="[b]"></a>PendSV_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_it.o(i.PendSV_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h743xx.o(RESET)
 </UL>
-<P><STRONG><a name="[180]"></a>RX_Mode</STRONG> (Thumb, 94 bytes, Stack size 8 bytes, nrf24l01.o(i.RX_Mode))
+<P><STRONG><a name="[180]"></a>RX_Mode</STRONG> (Thumb, 96 bytes, Stack size 8 bytes, nrf24l01.o(i.RX_Mode))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = RX_Mode &rArr; NRF24L01_RX_Write_Buf &rArr; HAL_SPI_TransmitReceive &rArr; SPI_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -2306,7 +2306,7 @@ Global Symbols
 <P><STRONG><a name="[9]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32h7xx_it.o(i.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32h743xx.o(RESET)
 </UL>
-<P><STRONG><a name="[145]"></a>Shoot_Chip</STRONG> (Thumb, 274 bytes, Stack size 8 bytes, main.o(i.Shoot_Chip))
+<P><STRONG><a name="[145]"></a>Shoot_Chip</STRONG> (Thumb, 280 bytes, Stack size 8 bytes, main.o(i.Shoot_Chip))
 <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = Shoot_Chip &rArr; HAL_TIM_PWM_Start &rArr; TIM_CCxChannelCmd
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_PWM_Start
@@ -2369,7 +2369,7 @@ Global Symbols
 <LI><a href="#[12f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_OC_ConfigChannel
 </UL>
 
-<P><STRONG><a name="[183]"></a>TX_Mode</STRONG> (Thumb, 114 bytes, Stack size 8 bytes, nrf24l01.o(i.TX_Mode))
+<P><STRONG><a name="[183]"></a>TX_Mode</STRONG> (Thumb, 112 bytes, Stack size 8 bytes, nrf24l01.o(i.TX_Mode))
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = TX_Mode &rArr; NRF24L01_TX_Write_Buf &rArr; HAL_SPI_TransmitReceive &rArr; SPI_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin

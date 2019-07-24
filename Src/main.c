@@ -83,11 +83,6 @@ void motion_planner(void);
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-//#define ROBOT_50W
-#define ROBOT_70W
-//#define ENCODER_360
-#define ENCODER_1000
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -100,7 +95,7 @@ void motion_planner(void);
 /* USER CODE BEGIN PV */
 
 //Robot参数
-uint8_t tx_freq, tx_mode, rx_freq;								//频点
+uint8_t tx_freq, tx_mode, rx_freq, rx_mode;								//频点
 uint8_t robot_num;
 uint8_t robot_set = 0x08;
 uint8_t Robot_Is_Infrared; 				//红外触发
@@ -116,7 +111,7 @@ uint8_t Comm_Down_Flag = 0;
 uint8_t Robot_Chipped = 0, Robot_Shooted = 0;
 uint8_t Robot_Status = 0, Last_Robot_Status = 0;
 int8_t Left_Report_Package = 0;
-uint16_t drib_power, drib_power_set[4] = {0, 1000, 2000, 3600};
+uint16_t drib_power, drib_power_set[4] = {0, 3000, 3000, 3000};
 //uint8_t selftest_vel_mode = 0x02, selftest_drib_mode = 0x03, selftest_chip_mode = 0x04, selftest_shoot_mode = 0x05, selftest_discharge_mode = 0x06; 
 //ALIGN_32BYTES(__attribute__((section (".RAM_D2"))) )
 uint16_t ADC_value[32];   			//存放ADC采集数据
@@ -691,7 +686,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 					Vy_package = 0;
 					Vx_package = 0;
 					Vr_package = 0;
-					Robot_drib = 0;
+//					Robot_drib = 0;
 					motion_planner();
 					Period_2ms_Since_Last_Zero_Motion_Planner = 0;
 				}
@@ -699,12 +694,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			else{
 				if(received_packet_flag == 0){
 					Total_Missed_Package_Num ++;
-					if (Total_Missed_Package_Num >= 250){ // 500ms Missing Package -> Every 16ms Do Motion Planner
+					if (Total_Missed_Package_Num >= 500){ // 500ms Missing Package -> Every 16ms Do Motion Planner
 						Comm_Down_Flag = 1;
 						Vy_package = 0;
 						Vx_package = 0;
 						Vr_package = 0;
-						Robot_drib = 0;
+//						Robot_drib = 0;
 						Period_2ms_Since_Last_Zero_Motion_Planner = 0;
 						motion_planner();
 					}
@@ -741,19 +736,23 @@ void Init_PCA9539(){
 	uint8_t Pca9539_convert[16] = {15, 7, 11, 3, 13, 5, 9, 1, 14, 6, 10, 2, 12, 4, 8, 0};
 	HAL_I2C_Mem_Read(&hi2c3, 0xe8 + (0x03<<1), 0, I2C_MEMADD_SIZE_8BIT, Pca9539_Read, 2, 0x10);
 	tx_mode = Pca9539_convert[(Pca9539_Read[0] & 0x0f)];
-	rx_freq = Pca9539_convert[(Pca9539_Read[0] >> 4)];
+	rx_mode = Pca9539_convert[(Pca9539_Read[0] >> 4)];
 	if(tx_mode < 0x08){
 		tx_freq = 4 * tx_mode;
 	}
 	else{
 		tx_freq = 58 + 4 * tx_mode;
 	}
-	if(rx_freq < 0x08){
-		rx_freq = 4 * rx_freq;
+	if (tx_mode == 1) tx_freq = 88;
+	if (tx_mode == 2) tx_freq = 100;
+	if(rx_mode < 0x08){
+		rx_freq = 4 * rx_mode;
 	}
 	else{
-		rx_freq = 58 + 4 * rx_freq;
+		rx_freq = 58 + 4 * rx_mode;
 	}
+	if (rx_mode == 1) rx_freq = 88;
+	if (rx_mode == 2) rx_freq = 100;
 	robot_num = Pca9539_convert[(Pca9539_Read[1] & 0x0f)] - 1;
 	robot_set = Pca9539_convert[(Pca9539_Read[1] >> 4)];
 }
@@ -853,7 +852,7 @@ uint8_t Shoot_Chip(){
 				Robot_Status = Robot_Status | (1 << 4);
 				Robot_Boot_Power = 0;
 				chipshoot_timerdelay_flag  = 0;
-				Robot_Chip_Or_Shoot = 0;
+				Robot_Chip_Or_Shoot = 2;   
 			
 				return 0;	
 		}
@@ -865,14 +864,14 @@ uint8_t Shoot_Chip(){
 //////				htim12.Instance = TIM12;
 
 				htim12.Instance = TIM12;
-				htim12.Init.Period = Robot_Boot_Power * 250 + 10;
+				htim12.Init.Period = Robot_Boot_Power * 250 + 0 + 10;
 				htim12.Instance->CCR2 = 10;
-				htim12.Instance->CCR1 = Robot_Boot_Power * 250 + 10;
+				htim12.Instance->CCR1 = Robot_Boot_Power * 250 + 0 + 10;
 			
 				HAL_TIM_PWM_Init(&htim12);
 				HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
 				
-				Robot_Chip_Or_Shoot = 0;
+				Robot_Chip_Or_Shoot = 2;
 				Robot_Status = Robot_Status | (1 << 5);
 				Robot_Boot_Power = 0;
 				chipshoot_timerdelay_flag  = 0;
